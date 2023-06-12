@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Round Robin Scheduler</title>
+    <style>
+      body {
+        background-color: black;
+        color: #ffd700;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        /* max-width: 600px; */
+        /* margin: 0 auto; */
+        margin-left: 220px;
+        padding: 20px;
+      }
+
+      h1 {
+        /* text-align: center; */
+        margin-left: 300px;
+      }
+
+      .processes {
+        margin-top: 40px;
+      }
+
+      .process {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .process .pid {
+        background-color: #ffd700;
+        color: black;
+        border-radius: 3px;
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      .process .burst-time,
+      .process .arrival-time {
+        background-color: black;
+        color: #ffd700;
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      .output {
+        margin-top: 40px;
+        text-align: center;
+      }
+
+      table {
+        margin-top: 20px;
+        margin-left: 100px;
+        width: 60%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ffd700;
+      }
+
+      th {
+        background-color: #ffd700;
+        color: black;
+      }
+
+      .gantt-chart {
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 200px;
+      }
+
+      .process-bar {
+        height: 40px;
+        background-color: #ffd700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+      }
+      .btn {
+        width: 150px;
+        height: 40px;
+        background-color: #ffd700;
+        color: black;
+        border-radius: 10px;
+        margin-left: 10px;
+        font-size: 16px;
+      }
+      .btn-1 {
+        width: 150px;
+        height: 40px;
+        background-color: #ffd700;
+        color: black;
+        border-radius: 10px;
+        margin-left: -230px;
+        font-size: 16px;
+      }
+      input {
+        width: 150px;
+        height: 30px;
+      }
+      #result {
+        margin-right: 220px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ROUND ROBIN</h1>
+
+      <label for="num-processes">Number of Processes:</label>
+      <input type="number" id="num-processes" />
+      <label for="time-quantum">Time Quantum:</label>
+      <input type="number" id="time-quantum" />
+      <button onclick="createTable()" class="btn">Create Table</button>
+      <div id="process-table"></div>
+
+      <div class="output">
+        <button onclick="runRoundRobin()" class="btn-1">Run Round Robin</button>
+        <p id="result"></p>
+      </div>
+      <div class="gantt-chart" id="gantt-chart"></div>
+    </div>
+
+    <script>
+      class Queue {
+        constructor() {
+          this.items = {};
+          this.frontIndex = 0;
+          this.backIndex = 0;
+        }
+        enqueue(item) {
+          this.items[this.backIndex] = item;
+          this.backIndex++;
+          return item + " inserted";
+        }
+        dequeue() {
+          const item = this.items[this.frontIndex];
+          delete this.items[this.frontIndex];
+          this.frontIndex++;
+          return item;
+        }
+        peek() {
+          return this.items[this.frontIndex];
+        }
+        get printQueue() {
+          return this.items;
+        }
+      }
+      function createTable() {
+        const numProcessesInput = document.getElementById("num-processes");
+        const numProcesses = parseInt(numProcessesInput.value);
+
+        if (isNaN(numProcesses) || numProcesses <= 0) {
+          alert("Please enter a valid number of processes.");
+          return;
+        }
+
+        let tableHtml = "<table>";
+        tableHtml +=
+          "<tr><th>PID</th><th>Arrival Time</th><th>Burst Time</th></tr>";
+
+        for (let i = 0; i < numProcesses; i++) {
+          tableHtml += `<tr><td>P${
+            i + 1
+          }</td><td><input type="number" class="arrival-time-input"></td><td><input type="number" class="burst-time-input"></td></tr>`;
+        }
+
+        tableHtml += "</table>";
+
+        const processTableDiv = document.getElementById("process-table");
+        processTableDiv.innerHTML = tableHtml;
+      }
+
+      function runRoundRobin() {
+        const arrivalTimeInputs =
+          document.getElementsByClassName("arrival-time-input");
+        const burstTimeInputs =
+          document.getElementsByClassName("burst-time-input");
+        const arrivalTimes = [];
+        const burstTimes = [];
+
+        for (let i = 0; i < arrivalTimeInputs.length; i++) {
+          const arrivalTime = parseInt(arrivalTimeInputs[i].value);
+          const burstTime = parseInt(burstTimeInputs[i].value);
+
+          if (
+            isNaN(arrivalTime) ||
+            isNaN(burstTime) ||
+            arrivalTime < 0 ||
+            burstTime <= 0
+          ) {
+            alert(
+              "Please enter valid arrival time and burst time for all processes."
+            );
+            return;
+          }
+
+          arrivalTimes.push(arrivalTime);
+          burstTimes.push(burstTime);
+        }
+
+        const timeQuantumInput = document.getElementById("time-quantum");
+        const timeQuantum = parseInt(timeQuantumInput.value);
+
+        if (isNaN(timeQuantum) || timeQuantum <= 0) {
+          alert("Please enter a valid time quantum.");
+          return;
+        }
+
+        const processes = [];
+        for (let i = 0; i < arrivalTimes.length; i++) {
+          processes.push({
+            pid: `P${i + 1}`,
+            arrivalTime: arrivalTimes[i],
+            tempBurstTime: burstTimes[i],
+            burstTimes: burstTimes[i],
+            completionTime: 0,
+            turnaroundTime: 0,
+            waitingTime: 0,
+          });
+        }
+        processes.sort((p1, p2) => p1.arrivalTime - p2.arrivalTime);
+        console.log(processes);
+        let totalTime = 0;
+        let tq = timeQuantum;
+        if (processes[0].arrivalTime > totalTime) {
+          totalTime = processes[0].arrivalTime;
+        }
+        const n = arrivalTimes.length;
+        const q = new Queue();
+        const mp = new Map();
+        for (let i = 0; i < n; i++) {
+          mp.set(processes[i].pid, 0);
+        }
+        q.enqueue(processes[0].pid);
+        const gChartProcesses = []
+        while (1) {
+          const queue = q.printQueue;
+          var length = Object.keys(queue).length;
+          if (length === 0) break;
+          let currID = q.peek();
+          let idx = -1;
+          q.dequeue();
+          mp.set(currID, 0);
+          for (var i = 0; i < n; i++) {
+            // console.log("This is from Loop ", currID, processes[i].pid, idx);
+            if (currID === processes[i].pid) {
+              idx = i;
+            }
+          }
+        //   console.log(idx);
+          const startTime = totalTime;
+          if (processes[idx].tempBurstTime >= tq) {
+            totalTime += tq;
+            processes[idx].tempBurstTime -= tq;
+          } else {
+            totalTime += processes[idx].tempBurstTime;
+            processes[idx].tempBurstTime = 0;
+          }
+          const endingTime = totalTime;
+          gChartProcesses.push({
+            pid: currID,
+            startTime: startTime,
+            endingTime: endingTime
+          })
+        //   console.log(totalTime);
+
+          let idle = 1;
+          for (var i = 0; i < n; i++) {
+            // console.log(
+            //   "This is from checkloop",
+            //   processes[i].arrivalTime,
+            //   processes[i].tempBurstTime,
+            //   processes[i].pid,
+            //   mp.get(processes[i].pid)
+            // );
+            if (
+              totalTime >= processes[i].arrivalTime &&
+              mp.get(processes[i].pid) === 0 &&
+              processes[i].tempBurstTime != 0 &&
+              currID != processes[i].pid
+            ) {
+              idle = 0;
+              q.enqueue(processes[i].pid);
+              mp.set(processes[i].pid, 1);
+            }
+          }
+          if (processes[idx].tempBurstTime > 0) {
+            q.enqueue(currID);
+            mp.set(currID, 1);
+          } else {
+            processes[idx].completionTime = totalTime;
+          }
+        }
+        let totalWaitingTime = 0;
+        let totalTurnaroundTime = 0;
+        for (var i = 0; i < n; i++) {
+          processes[i].turnaroundTime =
+            processes[i].completionTime - processes[i].arrivalTime;
+          processes[i].waitingTime =
+            processes[i].turnaroundTime - processes[i].burstTimes;
+          totalTurnaroundTime += processes[i].turnaroundTime;
+          totalWaitingTime += processes[i].waitingTime;
+        }
+        console.log(processes);
+
+        const averageWaitingTime = totalWaitingTime / processes.length;
+        const averageTurnaroundTime = totalTurnaroundTime / processes.length;
+
+        const resultElement = document.getElementById("result");
+        resultElement.innerHTML = `Average Waiting Time: ${averageWaitingTime.toFixed(
+          2
+        )}<br>Average Turnaround Time: ${averageTurnaroundTime.toFixed(2)}`;
+        console.log(processes);
+        generateGanttChart(gChartProcesses);
+      }
+
+
+      function generateGanttChart(processes) {
+        const ganttChartDiv = document.getElementById("gantt-chart");
+        // let ganttChartHtml = "Gantt <br> Chart : ";
+        points = [];
+        var t = processes[0].startTime;
+        for (let i = 0; i < processes.length; i++) {
+          const process = processes[i];
+          console.log(process);
+          const point = {
+            name: process.pid,
+            y: [process.startTime, process.endingTime],
+            complete: 0,
+            opacity: 0.5,
+          };
+          points.push(point);
+
+          // ganttChartHtml += `<div class="process-bar" style="width: ${process.burstTime * 20}px; color:black">${process.pid}</div>`;
+        }
+        console.log(points);
+        show_chart(points);
+
+        // ganttChartDiv.innerHTML = ganttChartHtml;
+      }
+    </script>
+    <script src="https://code.jscharting.com/latest/jscharting.js"></script>
+    <script>
+      var chart;
+      function show_chart(process) {
+        var i = 0;
+        tempprocess = [];
+        tempprocess.push(process[i]);
+        setInterval(() => {
+          if (process[i]?.complete <= 1 && i < process.length) {
+            process[i].complete += 0.25;
+            process[i].opacity = 1;
+
+            tempprocess[i] = process[i];
+            // console.log(process[i].complete);
+            chart = JSC.chart("chartDiv", {
+              debug: true,
+              type: "horizontal column",
+              zAxis_scale_type: "stacked",
+              yAxis_scale_type: "auto",
+              xAxis_visible: false,
+              title_label_text: "FCFS GanttChart  ",
+              legend_visible: false,
+              defaultPoint: {
+                label_text: "%name",
+                tooltip: "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+              },
+              yAxis: {},
+              series: [
+                {
+                  name: "one",
+                  points: tempprocess,
+                },
+              ],
+            });
+          }
+        }, 1000);
+        var flag = true;
+        setInterval(() => {
+          if (i < process.length) {
+            setInterval(() => {
+              if (process[i]?.complete <= 1 && i < process.length) {
+                process[i].complete += 0.22;
+                process[i].opacity = 1;
+
+                tempprocess[i] = process[i];
+                // console.log(process[i].complete);
+                chart = JSC.chart("chartDiv", {
+                  debug: true,
+                  type: "horizontal column",
+                  zAxis_scale_type: "stacked",
+                  yAxis_scale_type: "auto",
+                  xAxis_visible: false,
+                  title_label_text: "FCFS GanttChart  ",
+                  legend_visible: false,
+                  defaultPoint: {
+                    label_text: "%name",
+                    tooltip:
+                      "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+                  },
+                  yAxis: {},
+                  series: [
+                    {
+                      name: "one",
+                      points: tempprocess,
+                    },
+                  ],
+                });
+              }
+              flag = false;
+            }, 2000);
+          }
+          if (flag === false) {
+            i += 1;
+          }
+          console.log("run");
+        }, 6000);
+      }
+    </script>
+  </body>
+</html>
