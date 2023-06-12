@@ -4,8 +4,13 @@
     <title>Round Robin Scheduler</title>
     <style>
       body {
-        background-color: black;
-        color: #ffd700;
+        background-image: linear-gradient(
+          to right,
+          rgb(15, 23, 42),
+          rgb(88, 28, 135),
+          rgb(15, 23, 42)
+        );
+        color: white;
         font-family: Arial, sans-serif;
       }
 
@@ -115,6 +120,7 @@
     </style>
   </head>
   <body>
+    <a href="./index.html">home</a>
     <div class="container">
       <h1>ROUND ROBIN</h1>
 
@@ -123,13 +129,16 @@
       <label for="time-quantum">Time Quantum:</label>
       <input type="number" id="time-quantum" />
       <button onclick="createTable()" class="btn">Create Table</button>
+      <div
+        style="max-width: 600px; height: 300px; margin: auto"
+        id="chartDiv"
+      ></div>
       <div id="process-table"></div>
 
       <div class="output">
         <button onclick="runRoundRobin()" class="btn-1">Run Round Robin</button>
         <p id="result"></p>
       </div>
-      <div class="gantt-chart" id="gantt-chart"></div>
     </div>
 
     <script>
@@ -244,7 +253,7 @@
           mp.set(processes[i].pid, 0);
         }
         q.enqueue(processes[0].pid);
-        const gChartProcesses = []
+        const gChartProcesses = [];
         while (1) {
           const queue = q.printQueue;
           var length = Object.keys(queue).length;
@@ -259,7 +268,7 @@
               idx = i;
             }
           }
-        //   console.log(idx);
+          //   console.log(idx);
           const startTime = totalTime;
           if (processes[idx].tempBurstTime >= tq) {
             totalTime += tq;
@@ -272,9 +281,9 @@
           gChartProcesses.push({
             pid: currID,
             startTime: startTime,
-            endingTime: endingTime
-          })
-        //   console.log(totalTime);
+            endingTime: endingTime,
+          });
+          //   console.log(totalTime);
 
           let idle = 1;
           for (var i = 0; i < n; i++) {
@@ -324,8 +333,36 @@
         )}<br>Average Turnaround Time: ${averageTurnaroundTime.toFixed(2)}`;
         console.log(processes);
         generateGanttChart(gChartProcesses);
-      }
+        createUpdatedTable();
+        function createUpdatedTable() {
+          const numProcessesInput = document.getElementById("num-processes");
+          const numProcesses = parseInt(numProcessesInput.value);
 
+          if (isNaN(numProcesses) || numProcesses <= 0) {
+            alert("Please enter a valid number of processes.");
+            return;
+          }
+
+          let tableHtml = "<table>";
+          tableHtml +=
+            "<tr><th>PID</th><th>Arrival Time</th><th>Burst Time</th><th>Completion Time</th><th>Turnaround Time</th> <th>Waiting Time</th></tr>";
+
+          for (let i = 0; i < numProcesses; i++) {
+            tableHtml += `<tr>
+                <td>${processes[i].pid}</td><td><input value=${processes[i].arrivalTime} type="number" class="arrival-time-input" readonly></td>
+               <td><input value=${processes[i].burstTimes}  type="number" class="burst-time-input" readonly></td>
+                <td><input value=${processes[i].completionTime}  type="number" class="burst-time-input" readonly></td>
+               <td><input value=${processes[i].turnaroundTime}  type="number" class="burst-time-input" readonly></td>
+                <td><input value=${processes[i].waitingTime}  type="number" class="burst-time-input" readonly></td>
+              </tr>`;
+          }
+
+          tableHtml += "</table>";
+
+          const processTableDiv = document.getElementById("process-table");
+          processTableDiv.innerHTML = tableHtml;
+        }
+      }
 
       function generateGanttChart(processes) {
         const ganttChartDiv = document.getElementById("gantt-chart");
@@ -371,7 +408,7 @@
               zAxis_scale_type: "stacked",
               yAxis_scale_type: "auto",
               xAxis_visible: false,
-              title_label_text: "FCFS GanttChart  ",
+              title_label_text: "RR GanttChart  ",
               legend_visible: false,
               defaultPoint: {
                 label_text: "%name",
@@ -403,7 +440,7 @@
                   zAxis_scale_type: "stacked",
                   yAxis_scale_type: "auto",
                   xAxis_visible: false,
-                  title_label_text: "FCFS GanttChart  ",
+                  title_label_text: "RR GanttChart  ",
                   legend_visible: false,
                   defaultPoint: {
                     label_text: "%name",
@@ -420,13 +457,13 @@
                 });
               }
               flag = false;
-            }, 2000);
+            }, 1000);
           }
           if (flag === false) {
             i += 1;
           }
           console.log("run");
-        }, 6000);
+        }, 3000);
       }
     </script>
   </body>

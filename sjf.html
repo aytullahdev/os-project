@@ -173,7 +173,7 @@
             visited: false,
           });
         }
-        console.log(processes);
+
         processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
 
         let waitingTime = 0;
@@ -185,8 +185,6 @@
           arrived = processes.filter(
             (process) => process.arrivalTime >= t && !process.visited
           );
-
-          break;
         }
         for (let i = 0; i < processes.length; i++) {
           const process = processes[i];
