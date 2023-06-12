@@ -120,7 +120,10 @@
         <input type="number" id="num-processes" />
         <button onclick="createTable()" class="btn">Create Table</button>
       </div>
-
+      <div
+        id="chartDiv"
+        style="max-width: 500px; height: 300px; margin: auto"
+      ></div>
       <div id="process-table"></div>
 
       <div class="output">
@@ -129,10 +132,6 @@
       </div>
       <div class="gantt-chart" id="gantt-chart"></div>
     </div>
-    <div
-      id="chartDiv"
-      style="max-width: 500px; height: 300px; margin: auto"
-    ></div>
 
     <script>
       function createTable() {
@@ -264,6 +263,8 @@
           const point = {
             name: process.pid,
             y: [t, (t += process.burstTime)],
+            complete: 0,
+            opacity: 0.5,
           };
           points.push(point);
 
@@ -276,28 +277,76 @@
     </script>
     <script src="https://code.jscharting.com/latest/jscharting.js"></script>
     <script>
+      var chart;
       function show_chart(process) {
-        console.log(process);
-        var chart = JSC.chart("chartDiv", {
-          debug: true,
-          type: "horizontal column",
-          zAxis_scale_type: "stacked",
-          yAxis_scale_type: "auto",
-          xAxis_visible: false,
-          title_label_text: "FCFS GanttChart  ",
-          legend_visible: false,
-          defaultPoint: {
-            label_text: "%name",
-            tooltip: "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
-          },
-          yAxis: {},
-          series: [
-            {
-              name: "one",
-              points: process,
-            },
-          ],
-        });
+        var i = 0;
+        tempprocess = [];
+        tempprocess.push(process[i]);
+        setInterval(() => {
+          if (process[i]?.complete <= 1 && i < process.length) {
+            process[i].complete += 0.25;
+            process[i].opacity = 1;
+
+            tempprocess[i] = process[i];
+            // console.log(process[i].complete);
+            chart = JSC.chart("chartDiv", {
+              debug: true,
+              type: "horizontal column",
+              zAxis_scale_type: "stacked",
+              yAxis_scale_type: "auto",
+              xAxis_visible: false,
+              title_label_text: "FCFS GanttChart  ",
+              legend_visible: false,
+              defaultPoint: {
+                label_text: "%name",
+                tooltip: "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+              },
+              yAxis: {},
+              series: [
+                {
+                  name: "one",
+                  points: tempprocess,
+                },
+              ],
+            });
+          }
+        }, 1000);
+        setInterval(() => {
+          if (i < process.length) {
+            setInterval(() => {
+              if (process[i]?.complete <= 1 && i < process.length) {
+                process[i].complete += 0.22;
+                process[i].opacity = 1;
+
+                tempprocess[i] = process[i];
+                // console.log(process[i].complete);
+                chart = JSC.chart("chartDiv", {
+                  debug: true,
+                  type: "horizontal column",
+                  zAxis_scale_type: "stacked",
+                  yAxis_scale_type: "auto",
+                  xAxis_visible: false,
+                  title_label_text: "FCFS GanttChart  ",
+                  legend_visible: false,
+                  defaultPoint: {
+                    label_text: "%name",
+                    tooltip:
+                      "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+                  },
+                  yAxis: {},
+                  series: [
+                    {
+                      name: "one",
+                      points: tempprocess,
+                    },
+                  ],
+                });
+              }
+            }, 1000);
+          }
+          console.log("run");
+          i += 1;
+        }, 6000);
       }
     </script>
   </body>

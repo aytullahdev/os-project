@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FCFS Scheduler</title>
+    <style>
+      body {
+        background-image: linear-gradient(
+          to right,
+          rgb(15, 23, 42),
+          rgb(88, 28, 135),
+          rgb(15, 23, 42)
+        );
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        margin: auto;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 50px;
+        color: white;
+      }
+
+      .processes {
+        margin-top: 40px;
+      }
+
+      .process {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .process .pid {
+        background-color: #ffd700;
+        color: white;
+        border-radius: 3px;
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      .process .burst-time,
+      .process .arrival-time {
+        background-color: black;
+        color: #ffd700;
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      .output {
+        margin-top: 40px;
+        text-align: center;
+      }
+
+      table {
+        margin-top: 20px;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ffd700;
+      }
+
+      th {
+        background-color: #ffd700;
+        color: black;
+      }
+
+      .gantt-chart {
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .process-bar {
+        height: 40px;
+        background-color: #ffd700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+      }
+      .btn {
+        width: 150px;
+        height: 40px;
+        background-color: #ffd700;
+        color: black;
+        border-radius: 10px;
+        margin-left: 10px;
+        font-size: 16px;
+      }
+      input {
+        width: 150px;
+        height: 30px;
+      }
+      .hdiv {
+        display: flex;
+        justify-content: center;
+        justify-items: center;
+      }
+      .hdiv label {
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="chartDiv"
+      style="max-width: 500px; height: 300px; margin: auto"
+    ></div>
+
+    <script src="https://code.jscharting.com/latest/jscharting.js"></script>
+    <script>
+      process = [
+        {
+          name: "P1",
+          y: [0, 5],
+          complete: 0,
+          opacity: 0.5,
+        },
+        {
+          name: "P3",
+          y: [5, 10],
+          complete: 0,
+          opacity: 0.5,
+        },
+        {
+          name: "P2",
+          y: [10, 18],
+          complete: 0,
+          opacity: 0.5,
+        },
+        {
+          name: "P4",
+          y: [18, 21],
+          complete: 0,
+          opacity: 0.5,
+        },
+        {
+          name: "P5",
+          y: [21, 27],
+          complete: 0,
+          opacity: 0.5,
+        },
+      ];
+      var chart;
+      function show_chart(process) {
+        var i = 0;
+        tempprocess = [];
+        tempprocess.push(process[i]);
+        setInterval(() => {
+          if (process[i]?.complete <= 1 && i < process.length) {
+            process[i].complete += 0.25;
+            process[i].opacity = 1;
+
+            tempprocess[i] = process[i];
+            // console.log(process[i].complete);
+            chart = JSC.chart("chartDiv", {
+              debug: true,
+              type: "horizontal column",
+              zAxis_scale_type: "stacked",
+              yAxis_scale_type: "auto",
+              xAxis_visible: false,
+              title_label_text: "FCFS GanttChart  ",
+              legend_visible: false,
+              defaultPoint: {
+                label_text: "%name",
+                tooltip: "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+              },
+              yAxis: {},
+              series: [
+                {
+                  name: "one",
+                  points: tempprocess,
+                },
+              ],
+            });
+          }
+        }, 1000);
+        setInterval(() => {
+          if (i < process.length) {
+            setInterval(() => {
+              if (process[i]?.complete <= 1 && i < process.length) {
+                process[i].complete += 0.25;
+                process[i].opacity = 1;
+
+                tempprocess[i] = process[i];
+                // console.log(process[i].complete);
+                chart = JSC.chart("chartDiv", {
+                  debug: true,
+                  type: "horizontal column",
+                  zAxis_scale_type: "stacked",
+                  yAxis_scale_type: "auto",
+                  xAxis_visible: false,
+                  title_label_text: "FCFS GanttChart  ",
+                  legend_visible: false,
+                  defaultPoint: {
+                    label_text: "%name",
+                    tooltip:
+                      "<b>%name</b> <br/>%low - %high<br/>{(%high-%low)}",
+                  },
+                  yAxis: {},
+                  series: [
+                    {
+                      name: "one",
+                      points: tempprocess,
+                    },
+                  ],
+                });
+              }
+            }, 1000);
+          }
+          console.log("run");
+          i += 1;
+        }, 4000);
+      }
+      show_chart(process);
+    </script>
+  </body>
+</html>
