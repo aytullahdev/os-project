@@ -311,6 +311,7 @@
             });
           }
         }, 1000);
+        var flag = true;
         setInterval(() => {
           if (i < process.length) {
             setInterval(() => {
@@ -342,10 +343,13 @@
                   ],
                 });
               }
-            }, 1000);
+              flag = false;
+            }, 2000);
+          }
+          if (flag === false) {
+            i += 1;
           }
           console.log("run");
-          i += 1;
         }, 6000);
       }
     </script>

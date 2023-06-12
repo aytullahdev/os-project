@@ -186,11 +186,12 @@
             });
           }
         }, 1000);
+        var flag = true;
         setInterval(() => {
           if (i < process.length) {
             setInterval(() => {
               if (process[i]?.complete <= 1 && i < process.length) {
-                process[i].complete += 0.25;
+                process[i].complete += 0.22;
                 process[i].opacity = 1;
 
                 tempprocess[i] = process[i];
@@ -217,11 +218,14 @@
                   ],
                 });
               }
-            }, 1000);
+              flag = false;
+            }, 3000);
+          }
+          if (flag === false) {
+            i += 1;
           }
           console.log("run");
-          i += 1;
-        }, 4000);
+        }, 6000);
       }
       show_chart(process);
     </script>
