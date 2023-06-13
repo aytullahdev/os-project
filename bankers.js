@@ -87,7 +87,7 @@ function calculate() {
   }
   let safeSequence = [];
   let numFinished = 0;
-  const availableList = []
+  const availableList = [];
   while (numFinished < numProcesses) {
     let found = false;
     const newWork = [];
@@ -106,7 +106,7 @@ function calculate() {
     }
     availableList.push({
       available: newWork,
-      process: 0
+      process: 0,
     });
     if (!found) {
       break;
@@ -115,9 +115,9 @@ function calculate() {
 
   // Display the result
   if (numFinished == numProcesses) {
-    parent.className = 'parent'
+    parent.className = "parent";
     for (var i = 0; i < numProcesses; i++) {
-      task(availableList,i,safeSequence);
+      task(availableList, i, safeSequence);
     }
     console.log(availableList);
     // document.getElementById("result").innerHTML =
@@ -136,16 +136,16 @@ function checkNeedLessOrEqualWork(process, work) {
   }
   return true;
 }
-function task(availableList,i,safeSequence) {
+function task(availableList, i, safeSequence) {
   setTimeout(function () {
     availableList[i].process = safeSequence[i];
-    const box = document.createElement('div');
+    const box = document.createElement("div");
     box.className = "box";
     box.innerHTML = `
             <p>Available Resources</p>
             <p> ${availableList[i].available} </p>
             <p>Process ID ${availableList[i].process} </p>
-    `
-    document.getElementById('result').appendChild(box);
+    `;
+    document.getElementById("result").appendChild(box);
   }, 2000 * i);
 }
