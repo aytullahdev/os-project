@@ -80,18 +80,22 @@ function calculate() {
 
   // Run the Banker's Algorithm
   let work = available.slice();
+  console.log(work);
   let finish = [];
   for (let i = 0; i < numProcesses; i++) {
     finish.push(false);
   }
   let safeSequence = [];
   let numFinished = 0;
+  const availableList = []
   while (numFinished < numProcesses) {
     let found = false;
+    const newWork = [];
     for (let i = 0; i < numProcesses; i++) {
       if (!finish[i] && checkNeedLessOrEqualWork(i, work)) {
         for (let j = 0; j < numResources; j++) {
           work[j] += allocation[i][j];
+          newWork.push(work[j]);
         }
         finish[i] = true;
         safeSequence.push(i);
@@ -100,6 +104,10 @@ function calculate() {
         break;
       }
     }
+    availableList.push({
+      available: newWork,
+      process: 0
+    });
     if (!found) {
       break;
     }
@@ -107,8 +115,13 @@ function calculate() {
 
   // Display the result
   if (numFinished == numProcesses) {
-    document.getElementById("result").innerHTML =
-      "Safe sequence: " + safeSequence;
+    parent.className = 'parent'
+    for (var i = 0; i < numProcesses; i++) {
+      task(availableList,i,safeSequence);
+    }
+    console.log(availableList);
+    // document.getElementById("result").innerHTML =
+    //   "Safe sequence: " + safeSequence;
   } else {
     document.getElementById("result").innerHTML =
       "Deadlock detected" + safeSequence;
@@ -122,4 +135,17 @@ function checkNeedLessOrEqualWork(process, work) {
     }
   }
   return true;
+}
+function task(availableList,i,safeSequence) {
+  setTimeout(function () {
+    availableList[i].process = safeSequence[i];
+    const box = document.createElement('div');
+    box.className = "box";
+    box.innerHTML = `
+            <p>Available Resources</p>
+            <p> ${availableList[i].available} </p>
+            <p>Process ID ${availableList[i].process} </p>
+    `
+    document.getElementById('result').appendChild(box);
+  }, 2000 * i);
 }
